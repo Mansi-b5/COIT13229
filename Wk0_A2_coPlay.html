@@ -1,0 +1,413 @@
+<!-- You are not expected to read or edit this HTML5 -->
+<DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>coPlay</title>
+    <style>
+canvas {
+            border: 1px solid black;
+        }
+
+html {
+    /*background-image: linear-gradient(-45deg, rgb(139, 139, 139), rgba(153, 153, 153, 0.576));
+    background-size: 100px 100px;*/
+    background-color: grey;
+}
+body{
+    /*width:  1000px;*/
+    margin: auto;
+    font-family: 'Ruluko', sans-serif;
+    color: white;
+}
+header,h1,h2{
+    color: white;
+    font-family: 'Shrikhand', cursive;
+    font-size:30px;
+    text-align: center;
+    text-shadow: 5px 5px rgba(0, 0, 0, 0.576);
+}
+.tracker{
+    position: relative;
+    /*left: 550px;*/
+    display:flex;
+    flex-direction: row;
+    justify-content: space-around;
+    background-color: #0B3303;
+    width:400px;
+    border: groove rgb(255, 255, 255) 5px;
+    border-radius: 20px;
+}
+.numDisks{
+    background-color: #0B3303;
+    color:white;
+    margin: 25px 25px;
+    border: none;
+}
+.board{
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height:550px;
+    max-width:800px;
+    background-color: rgba(206, 206, 206,.8);
+    position: relative;
+    left:100px;
+    border: groove rgb(255, 255, 255) 1px;
+}
+.tower{
+    width: 260px;
+    background-image: linear-gradient(90deg,rgba(0, 0, 0, 0) 115px, #9f834d 115px, #9f834d 145px, rgba(0,0,0,.5) 150px, rgba(0,0,0,0) 150px);
+    height:500px;
+    border-bottom: solid #9f834d 15px;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    border-radius: 20px;
+    margin: 10px 0 -10px 0;
+    box-shadow:0 5px rgba(0, 0, 0, 0.5);
+}
+#counter, #minimum, .numdisks {
+    font-family: 'Roboto Mono', monospace;
+    text-shadow: 2px 2px rgb(114, 113, 113);
+    font-size: 20px;
+    text-align: center;
+    margin: 0 0 4px 0;
+}
+#modal {
+	background-color: rgba(0,0,0,.4);
+	position: fixed;
+	top: 0;
+	left: 0;
+	/*height: 100%;
+	width: 100%;*/
+	z-index: 1;
+    overflow: auto;
+    display: none;
+}
+#modal-textbox {
+	background-color: #0B3303;
+	width: 350px;
+	border-radius: 2px;
+    margin: 300px auto;
+    line-height: 1.2;
+    text-align: center;
+    padding: 5px 25px;
+    border: groove rgb(255, 255, 255) 5px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+}
+#winner{
+    font-size: 25px;
+}
+h2{
+    color: white;
+    font-family: 'Shrikhand', cursive;
+    font-size:30px;
+    text-align: center;
+    text-shadow: 5px 5px rgba(0, 0, 0, 0.576);
+}
+li{
+    list-style-type: none;
+    margin: 5px 15px;
+}
+.rules {
+    font-size: 20px;
+    text-shadow: 2px 2px rgba(255, 255, 255, 0.3);
+    background-color: #0B3303;
+    border: groove rgb(255, 255, 255) 5px;
+    border-radius: 20px;
+    padding: 5px 15px;
+}
+footer{
+    background-color: rgba(11, 51, 3, 0.2)
+}
+.disk{
+    border: solid black 1px;
+    border-radius:50px;
+    height: 40px;
+    box-shadow:2px 1px rgba(0, 0, 0, 0.5);
+}
+#disk1{
+    width: 260px;
+    background-color: green;
+}
+#disk2{
+    width: 235px;
+    background-color: yellow;
+}
+#disk3{
+    width: 210px;
+    background-color: teal;
+}
+#disk4{
+    width: 185px;
+    background-color: pink;
+}
+#disk5{
+    width: 160px;
+    background-color: skyblue;
+}
+#disk6{
+    width: 135px;
+    background-color: rebeccapurple;
+}
+#disk7{
+    width: 110px;
+    background-color: red;
+}
+#disk8{
+    width: 85px;
+    background-color: orange;
+}
+.reset{
+    text-align: center;
+    margin: 10px auto;
+    padding:5px;
+    background-color: #0B3303;
+    border: groove rgb(255, 255, 255) 1px;
+    border-radius: 20px;
+    width: 100px;
+    color:white;
+    position: relative;
+    left:450px;
+}
+
+</style>
+
+        <script>
+        setInterval(function() {
+            fetch('/update', 
+            {method: 'GET'})
+            .then(response => response.json())
+            .then(messages => {
+                for (const data of messages) {
+                    if ('message' in data) {
+                        const chat = document.getElementById('chat');
+                        chat.innerText=data['message'];
+                    } else if ('tower' in data) {
+                        tower=JSON.parse(data['tower'])
+                        if (tower==1) {
+                            actions(tower1)
+                        } else if (tower==2) {
+                            actions(tower2)
+                        } else if (tower==3) {
+                            actions(tower3)
+                        } else if ('noupdate' in data) {
+                            noMessages=true
+                        }
+                    }
+                }
+            });
+        },100)
+    </script>
+    <h1>Chat</h1>
+    <div id="chat">Chat</div>
+    <input type="text" id="chatInput" placeholder="Type here"></input>
+    <button onclick="
+       fetch('/message', 
+                          {method: 'POST',
+                           headers: {'Content-Type': 'application/text'},
+                           body:btoa(document.getElementById('chatInput').value)
+                          })
+     ">Post</button>
+
+    </script>
+</head>
+<body>
+    <h1>WebApp</h1>
+    <script>
+        function serializeMouseEvent(event) {
+            return JSON.stringify({
+                clientX: event.clientX,
+                clientY: event.clientY,
+            });
+        }
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+    </script>
+<!--https://raw.githubusercontent.com/DaveSchuetz/Tower-of-Hanoi/refs/heads/master/index.html-->
+<!--DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Tower of Hanoi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Ruluko|Shrikhand" rel="stylesheet" /-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+
+<!--/head>
+<body>
+    <header-->
+        <!--HEader that has the title of the page  -->
+        <h1>Tower of Hanoi</h1>
+    <!--/header-->
+    <div class="tracker">
+        <p>Choose Disks</br>
+            <select id = "drop" class = "numDisks" onchange="newGame()">
+            <option id ="d3" selected>3</option>
+            <option id ="d4">4</option>
+            <option id ="d5">5</option>
+            <option id ="d6">6</option>
+            <option id ="d7">7</option>
+            <option id ="d8">8</option>
+            </select>
+        </p>
+
+        <!-- Counter at the top of the page also a portion that tells the minimum amount of moves -->
+        <div><p>Moves made</p>
+            <div id="counter">0</div>
+        </div>
+        <div><p>Minimum moves to solve</p>
+            <div id="minimum">0</div>
+        </div>
+    </div>
+    <h2>Game</h2>
+    <div = id="modal">
+        <div id="modal-textbox">
+            <h2>Congratulations</h2>
+            <!-- Paragraph added by JS -->
+        </div>
+    </div>
+        <div class="board">
+            <!-- The game board will need to have three towers that the disks can move around -->
+            <div class="tower" id="first">
+
+            </div>
+            <div class="tower" id="second">
+                
+            </div>
+            <div class="tower" id="third">
+
+            </div>
+        </div>
+    <!-- reset button -->
+    <button class="reset" onclick="newGame()">Reset</button>
+    <h2>How to Play</h2>
+    <div class="rules">
+        <!-- Rules to be listed under the game board -->
+        <p>The objective of Tower of Hanoi is to move the disks from the tower on the left to the tower on the right. There are 3 simple rules</p>
+        <ul>
+            <li>Only one disk can be moved at a time</li>
+            <li>Each move consists of moving the top disk from one tower to the top of another tower, or an empty tower</li>
+            <li>No disk may be placed on top of a smaller disk</li>
+        </ul>
+    </div>
+    
+    <footer>
+        <!-- A footer for links and signature -->
+        <h5>Created by Dave Schuetz 2018</h5>
+    </footer>
+
+    <!--script src="main.js"></script>
+</body>
+</html-->
+<script>
+    // setting the towers and disk vars
+
+const tower1 = document.querySelector('#first')
+const tower2 = document.querySelector('#second')
+const tower3 = document.querySelector('#third')
+let diskSelector = 0
+let minMoves = 0
+let counter = 0
+
+//Click event to show highlighted item variable needed to hold a true false value
+let active = false
+
+//Creating using DOM elements
+function build(){
+    const diskDrop = document.getElementById('drop')
+    diskSelector = diskDrop.options[diskDrop.selectedIndex].value
+    for (i = 1; i <= diskSelector; i++){
+        // for loop to build the disks
+        let diskDiv = document.createElement('div')
+        diskDiv.id = 'disk' + i
+        diskDiv.className = 'disk'
+        tower1.appendChild(diskDiv)}
+    minMoves = 2 ** diskSelector - 1
+    document.getElementById('minimum').textContent = minMoves
+    }build()
+
+//let actions = function(){
+    let actions = function(ths){    
+    //Stop console message from appearing with empty towers
+    if (active === false && ths.childElementCount === 0){
+        return
+    }else if (active === ths.lastChild){
+        ths.lastChild.style.borderWidth = '1px'
+        active = false
+    }else if (active === false){
+        ths.lastChild.style.borderWidth = '10px'
+        active = ths.lastChild
+    }else if (active.offsetWidth < ths.lastChild.offsetWidth || ths.childElementCount === 0){
+        active.style.borderWidth = '1px'
+        ths.appendChild(active)
+        counter =counter + 1
+        document.getElementById('counter').textContent = counter
+        winner()
+        active = false
+    }else{
+        active.style.borderWidth = '1px'
+        active = false}
+}
+
+const tower_click_url="/tower";
+function intercept_actions(tower) {
+        url=tower_click_url+"?tower="+tower
+        fetch(url, {method: 'GET'})
+    }
+    function intercept_actions1() {
+        intercept_actions(1)
+        //actions(tower1)
+    }
+    function intercept_actions2() {
+        intercept_actions(2)
+        //actions(tower2)
+    }
+    function intercept_actions3() {
+        intercept_actions(3)
+        console.log("tower3")
+        //actions(tower3)
+    }
+
+
+
+//The listeners are on the parents
+tower1.addEventListener('click', intercept_actions1)
+tower2.addEventListener('click', intercept_actions2)
+tower3.addEventListener('click', intercept_actions3)
+//winner alert
+function winner() {if (tower3.childElementCount == diskSelector){
+    const $modal = $('#modal')
+    const $endGame = $('#modal-textbox')
+    $modal.css('display', 'block')
+    let para = document.createElement('p')
+    para.id = 'winner'
+    $endGame.append(para)
+    counter === minMoves ? $('#winner').text(`You cleared the tower in ${counter} moves!! That is the fewest possible with ${diskSelector} disks.`): $('#winner').text(`You cleared the tower in ${counter} moves! Try to do it again in fewer moves. The fewest to solve ${diskSelector} disks is ${minMoves} moves.`)
+    const closeModal = () => {
+        $modal.css('display', 'none')
+    }
+    $modal.on('click', closeModal)
+    tower3.removeEventListener('click', intercept_actions3)
+}}
+
+function newGame(){
+    $('.disk').remove()
+    active = false
+    counter = 0
+    document.getElementById('counter').textContent = counter
+    build()
+
+    tower3.addEventListener('click', intercept_actions3)
+}
+</script>
+
+<a href='/shutdown'>Shutdown</a>
