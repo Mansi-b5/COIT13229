@@ -4,6 +4,7 @@
 
 TESTING=False # Run tests
 
+import datetime
 from flask import Flask, request
 import threading, time, zmq, base64, os, signal, json, requests, logging, random
 logging.getLogger('werkzeug').disabled = True
@@ -74,6 +75,10 @@ class Webapp:
         while True:
             try:
                 ms = self.pull_socket.recv_json(zmq.NOBLOCK)
+                
+                current_time = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                print(f"[{current_time}] Message received on ZMQ port - {self.pull_socket.getsockopt(zmq.LAST_ENDPOINT).decode()} -> {ms}")
+
 
                 ms_str = json.dumps(ms, sort_keys=True)
                 if ms_str in duplicates:
@@ -89,7 +94,8 @@ class Webapp:
                     return ms
                 messages=messages+[ms]
             except zmq.Again: 
-                return json.dumps(messages)
+                return '', 204
+                #return json.dumps(messages)
 
     #@app.route('/shutdown')
     # You can ignore this method.
