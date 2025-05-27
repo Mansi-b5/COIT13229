@@ -12,7 +12,6 @@ class Webapp:
     # Creates front-end Flask endpoints on localhost:browser_port.
     # Creates listening ZMQ pull socket on zmq_port.
     # Creates sending ZMQ push sockets for each of webapp_ports.
-    updated = []
     def __init__(self,browser_port,zmq_port,webapp_ports):
         app = Flask("webapp")
         app.add_url_rule("/","get_home",self.home,methods=['GET'])
@@ -71,9 +70,16 @@ class Webapp:
     # Pulls all queued messages and them to browser for processing.
     def updates_get(self):
         messages=[]
+        duplicates= set() #set will only keep unique messages (filter)
         while True:
             try:
                 ms = self.pull_socket.recv_json(zmq.NOBLOCK)
+
+                ms_str = json.dumps(ms, sort_keys=True)
+                if ms_str in duplicates:
+                    continue  # Skip if already read
+                duplicates.add(ms_str)
+
                 if not TESTING:
                     print(ms)
                 else:
