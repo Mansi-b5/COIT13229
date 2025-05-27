@@ -5,6 +5,7 @@
 TESTING=False # Run tests
 
 import datetime
+import uuid
 from flask import Flask, request
 import threading, time, zmq, base64, os, signal, json, requests, logging, random
 logging.getLogger('werkzeug').disabled = True
@@ -21,6 +22,7 @@ class Webapp:
         app.add_url_rule("/message","post_message",self.message_post,methods=['POST'])
         app.add_url_rule("/shutdown","get_shutdown",self.shutdown,methods=['GET'])
         context = zmq.Context()
+        self.duplicates= set() #set will only keep unique messages (filter)
         self.pull_socket = context.socket(zmq.PULL)
         self.pull_socket.bind(f"tcp://127.0.0.1:{zmq_port}")
         other_sockets=[]
@@ -41,6 +43,7 @@ class Webapp:
 
     # Sends a JSON message to all webapps, including itself.
     def broadcast(self, jsn): # {"message":solution_messages}
+        jsn['id'] = str(uuid.uuid4())
         if random.random()>0.5:
             socket=self.other_sockets.pop()
             self.other_sockets=self.other_sockets+[socket]
@@ -71,19 +74,17 @@ class Webapp:
     # Pulls all queued messages and them to browser for processing.
     def updates_get(self):
         messages=[]
-        duplicates= set() #set will only keep unique messages (filter)
         while True:
             try:
                 ms = self.pull_socket.recv_json(zmq.NOBLOCK)
+                msId = ms.get('id')
                 
-                current_time = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                print(f"[{current_time}] Message received on ZMQ port - {self.pull_socket.getsockopt(zmq.LAST_ENDPOINT).decode()} -> {ms}")
+                #current_time = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                #print(f"[{current_time}] Message received on ZMQ port - {self.pull_socket.getsockopt(zmq.LAST_ENDPOINT).decode()} -> {ms}")
 
-
-                ms_str = json.dumps(ms, sort_keys=True)
-                if ms_str in duplicates:
+                if msId in self.duplicates:
                     continue  # Skip if already read
-                duplicates.add(ms_str)
+                self.duplicates.add(msId)
 
                 if not TESTING:
                     print(ms)
@@ -94,8 +95,8 @@ class Webapp:
                     return ms
                 messages=messages+[ms]
             except zmq.Again: 
-                return '', 204
-                #return json.dumps(messages)
+                #return '', 204
+                return json.dumps(messages)
 
     #@app.route('/shutdown')
     # You can ignore this method.
@@ -139,15 +140,65 @@ def test_message_hello_world():
     url1 = 'http://127.0.0.1:5000/message'
     json_data = base64.b64encode("Hello world".encode('utf-8'))
     response_ignored = requests.post(url1, json_data)
+    
     # Check the message has been broadcasted and is returned when requesting updates.
     url1 = 'http://127.0.0.1:5000/update'
     last_chat=requests.get(url1).json().pop()['message']
     return last_chat=="Hello world"
 
+#test for unique messages and tower clicks
+def test_unique_messages():
+    print("\nRunning test_unique_message_delivery...")
+    time.sleep(1)
+    
+    # Simulate GUI sending Hello
+    url1 = 'http://127.0.0.1:5000/message'
+    unique_text = f"TestMsg with ID {uuid.uuid4()}"
+    json_data = base64.b64encode(unique_text.encode('utf-8'))
+    requests.post(url1, json_data)
+
+    # Simulate receiving Hello
+    url2 = 'http://127.0.0.1:5000/update'
+    messages = requests.get(url2).json()
+    if not messages:
+        print("Test failed: No messages received.")
+        return False
+
+    # Find unique message
+    found = None
+    for msg in messages:
+        if msg.get('message') == unique_text:
+            found = msg
+            break
+    
+    if found is None:
+        print("Test failed: Message was not received.")
+        return False
+   
+    if "id" not in found:
+        print("Test failed: 'id' field missing from received message.")
+        return False
+
+    print(f"PASS: Unique message received {found['message']}")
+
+    # Call /update again to see message should NOT appear again
+    second_batch = requests.get(url2).json()
+    for msg in second_batch:
+        if msg.get('id') == found['id']:
+            print("Test failed: Duplicate message received on second /update call.")
+            return False
+
+    print("PASS: No duplicates received on second /update call")
+    return True
+
 def tests():
     do_test_message_hello_world=True
+    do_test_unique_messages = True
     if do_test_message_hello_world:
         print(f"test_message_hello_world: {test_message_hello_world()}")
+        test_clean()
+    if do_test_unique_messages:
+        print(f"test_unique_message_delivery: {test_unique_messages()}")
         test_clean()
 
 if TESTING:
