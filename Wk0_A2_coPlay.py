@@ -12,6 +12,7 @@ class Webapp:
     # Creates front-end Flask endpoints on localhost:browser_port.
     # Creates listening ZMQ pull socket on zmq_port.
     # Creates sending ZMQ push sockets for each of webapp_ports.
+    updated = []
     def __init__(self,browser_port,zmq_port,webapp_ports):
         app = Flask("webapp")
         app.add_url_rule("/","get_home",self.home,methods=['GET'])
