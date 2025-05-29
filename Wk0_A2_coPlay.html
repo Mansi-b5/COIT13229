@@ -198,6 +198,13 @@ footer{
                         } else if ('noupdate' in data) {
                             noMessages=true
                         }
+                    }else if ('state' in data){
+                        $('.disk').remove()
+                        active = false
+                        counter = 0
+                        document.getElementById('counter').textContent = counter
+                        renderFromState(data.state);
+                       
                     }
                 }
             });
@@ -333,7 +340,28 @@ function build(){
         tower1.appendChild(diskDiv)}
     minMoves = 2 ** diskSelector - 1
     document.getElementById('minimum').textContent = minMoves
-    }build()
+}build()
+
+
+function renderFromState(state) {
+    console.log(state[0].length)
+    const diskDrop = document.getElementById('drop')
+    drop.value = state[0].length
+
+    for (let i = 0; i < 3; i++) {
+        for (let j = 1; j <= state[i].length ; j++) {
+            let diskDiv = document.createElement("div");
+            diskDiv.id = 'disk' + j
+            diskDiv.className = 'disk'
+            tower1.appendChild(diskDiv);
+        }
+    }
+
+    // Update minimum moves
+    const totalDisks = state[0].length + state[1].length + state[2].length;
+    minMoves = 2 ** totalDisks - 1;
+    document.getElementById('minimum').textContent = minMoves;
+}
 
 //let actions = function(){
     let actions = function(ths){    
@@ -404,7 +432,12 @@ function newGame(){
     active = false
     counter = 0
     document.getElementById('counter').textContent = counter
+
     build()
+    
+    const diskDrop = document.getElementById('drop')
+    diskSelector = diskDrop.options[diskDrop.selectedIndex].value
+    fetch(`/start_game?num_disks=${diskSelector}`);
 
     tower3.addEventListener('click', intercept_actions3)
 }

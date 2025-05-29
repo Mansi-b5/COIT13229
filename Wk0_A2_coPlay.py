@@ -21,8 +21,13 @@ class Webapp:
         app.add_url_rule("/tower","get_tower",self.tower_get,methods=['GET'])
         app.add_url_rule("/message","post_message",self.message_post,methods=['POST'])
         app.add_url_rule("/shutdown","get_shutdown",self.shutdown,methods=['GET'])
-        context = zmq.Context()
+        app.add_url_rule("/start_game","get_start_game",self.start_game,methods=['GET'])
+
         self.duplicates= set() #set will only keep unique messages (filter)
+        self.game_state = [[3,2,1], [], []]
+        self.selected_tower = None
+
+        context = zmq.Context()
         self.pull_socket = context.socket(zmq.PULL)
         self.pull_socket.bind(f"tcp://127.0.0.1:{zmq_port}")
         other_sockets=[]
@@ -93,6 +98,10 @@ class Webapp:
                 if "shutdown" in ms:
                     threading.Timer(1.0,self.do_shutdown).start()
                     return ms
+                
+                if "state" in ms:
+                    self.game_state = ms["state"]
+                
                 messages=messages+[ms]
             except zmq.Again: 
                 #return '', 204
@@ -104,8 +113,17 @@ class Webapp:
     def shutdown(self):
         self.broadcast({"shutdown":"shutdown"})
         return "<a href='/'>Home</a>"
+    
     def do_shutdown(self):
         os.kill(os.getpid(), signal.SIGINT)
+
+    #@app.route("/start_game")
+    def start_game(self):
+        num_disks = int(request.args.get("num_disks", 3))
+        self.num_disks = num_disks
+        self.game_state = [list(range(num_disks, 0, -1)), [], []]
+        self.broadcast({"state": self.game_state})
+        return "ok"
 
 # Thread target - start a peer by instantiating a Webapp.
 def peer(browser_port,webapp_port,webapp_ports): 
