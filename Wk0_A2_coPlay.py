@@ -27,6 +27,7 @@ class Webapp:
         self.duplicates= set() #set will only keep unique messages (filter)
         self.game_state = [[1,2,3], [], []]
         self.selected_tower = None
+        self.counter = 0 
 
         context = zmq.Context()
         self.pull_socket = context.socket(zmq.PULL)
@@ -99,16 +100,12 @@ class Webapp:
             # Cancel selection
             self.selected_tower = None
 
-        print(self.game_state)
         self.broadcast({"tower": tower,
         "state": self.game_state})
-        # self.broadcast({"tower":tower})
-        # self.broadcast({"state": self.game_state})
         return "ok"
 
     #@app.route('/current_state')
     def get_current_state(self):
-        print(self.game_state)
         return jsonify({"state":self.game_state})
     
     #@app.route('/update') #,methods=["GET"])
@@ -121,15 +118,14 @@ class Webapp:
                 ms = self.pull_socket.recv_json(zmq.NOBLOCK)
                 msId = ms.get('id')
                 
-                #current_time = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                #print(f"[{current_time}] Message received on ZMQ port - {self.pull_socket.getsockopt(zmq.LAST_ENDPOINT).decode()} -> {ms}")
-
+                current_time = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                
                 if msId in self.duplicates:
                     continue  # Skip if already read
                 self.duplicates.add(msId)
 
                 if not TESTING:
-                    print(ms)
+                    print(f"[{current_time}] Message received on ZMQ port - {self.pull_socket.getsockopt(zmq.LAST_ENDPOINT).decode()} -> {ms}")
                 else:
                     time.sleep(TESTING_DELAY)
                 
@@ -142,7 +138,6 @@ class Webapp:
                 
                 messages=messages+[ms]
             except zmq.Again: 
-                #return '', 204
                 return json.dumps(messages)
 
     #@app.route('/shutdown')

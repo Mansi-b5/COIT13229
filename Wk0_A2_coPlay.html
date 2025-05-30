@@ -199,16 +199,13 @@ footer{
                             noMessages=true
                         }
                     }else if ('state' in data){
-                        counter = 0
-                        document.getElementById('counter').textContent = counter
-
                         let isNewGame;
+                        let counter;
                         if ('new_game' in data && data.new_game) {
                             isNewGame = data.new_game;
                         } else {
                             isNewGame = false;
                         }
-                        console.log("here1")
                         updateFromState(data.state, isNewGame);
 
                     }
@@ -341,7 +338,6 @@ footer{
             .then(data => {
                 if ('state' in data) {
                     $('.disk').remove();
-                    console.log("here")
                     updateFromState(data.state, false);
                 }
             });
@@ -362,9 +358,10 @@ function build(){
 }build()
 
 
-function updateFromState(state, isNewGame = false) {
+function updateFromState(state, isNewGame = false, counter=0) {
     $('.disk').remove();
     const towers = [tower1, tower2, tower3];
+    let counterText = document.getElementById('counter');
     //const diskDrop = document.getElementById('drop')
     //drop.value = state[0].length
 
@@ -379,11 +376,10 @@ function updateFromState(state, isNewGame = false) {
         }
     }
 
-    if (isNewGame) {
+    if(isNewGame) {
         active = false;
         counter = 0;
-        document.getElementById('counter').textContent = counter;
-
+        counterText.textContent = counter;
         const totalDisks = state[0].length + state[1].length + state[2].length;
         document.getElementById('drop').value = totalDisks;
     }
