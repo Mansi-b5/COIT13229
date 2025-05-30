@@ -6,7 +6,7 @@ TESTING=False # Run tests
 
 import datetime
 import uuid
-from flask import Flask, request
+from flask import Flask, jsonify, request
 import threading, time, zmq, base64, os, signal, json, requests, logging, random
 logging.getLogger('werkzeug').disabled = True
 
@@ -22,9 +22,10 @@ class Webapp:
         app.add_url_rule("/message","post_message",self.message_post,methods=['POST'])
         app.add_url_rule("/shutdown","get_shutdown",self.shutdown,methods=['GET'])
         app.add_url_rule("/start_game","get_start_game",self.start_game,methods=['GET'])
+        app.add_url_rule("/current_state","get_current_state",self.get_current_state,methods=['GET'])
 
         self.duplicates= set() #set will only keep unique messages (filter)
-        self.game_state = [[3,2,1], [], []]
+        self.game_state = [[1,2,3], [], []]
         self.selected_tower = None
 
         context = zmq.Context()
@@ -70,10 +71,46 @@ class Webapp:
     # Called when a user clicks on a tower.
     # Broadcasts tower message to all webapps.
     def tower_get(self):
-        tower=request.args['tower']
-        self.broadcast({"tower":tower})
+        tower= int(request.args['tower'])
+
+        if self.selected_tower is None:
+            if self.game_state[tower-1]: 
+                self.selected_tower = tower
+            
+
+        elif self.selected_tower != tower:
+            from_tower = self.selected_tower -1
+            to_tower = tower-1
+            
+            if self.game_state[from_tower]:
+
+                disk = self.game_state[from_tower][-1]
+
+                #check if valid game move
+                if not self.game_state[to_tower] or self.game_state[to_tower][-1] < disk:
+                    self.game_state[from_tower].pop()
+                    self.game_state[to_tower].append(disk)
+                else:
+                    print("Invalid move")
+
+                # Reset after move
+                self.selected_tower = None
+        else:
+            # Cancel selection
+            self.selected_tower = None
+
+        print(self.game_state)
+        self.broadcast({"tower": tower,
+        "state": self.game_state})
+        # self.broadcast({"tower":tower})
+        # self.broadcast({"state": self.game_state})
         return "ok"
 
+    #@app.route('/current_state')
+    def get_current_state(self):
+        print(self.game_state)
+        return jsonify({"state":self.game_state})
+    
     #@app.route('/update') #,methods=["GET"])
     # Called periodically by the polling browser.
     # Pulls all queued messages and them to browser for processing.
@@ -95,6 +132,7 @@ class Webapp:
                     print(ms)
                 else:
                     time.sleep(TESTING_DELAY)
+                
                 if "shutdown" in ms:
                     threading.Timer(1.0,self.do_shutdown).start()
                     return ms
@@ -121,8 +159,12 @@ class Webapp:
     def start_game(self):
         num_disks = int(request.args.get("num_disks", 3))
         self.num_disks = num_disks
-        self.game_state = [list(range(num_disks, 0, -1)), [], []]
-        self.broadcast({"state": self.game_state})
+        self.game_state = [list(range(1, num_disks + 1)), [], []]
+        
+        self.broadcast({
+        "state": self.game_state,
+        "new_game": True,})
+
         return "ok"
 
 # Thread target - start a peer by instantiating a Webapp.

@@ -177,8 +177,8 @@ footer{
 
 </style>
 
-        <script>
-        setInterval(function() {
+    <script>
+        setInterval(function poll() {
             fetch('/update', 
             {method: 'GET'})
             .then(response => response.json())
@@ -199,12 +199,18 @@ footer{
                             noMessages=true
                         }
                     }else if ('state' in data){
-                        $('.disk').remove()
-                        active = false
                         counter = 0
                         document.getElementById('counter').textContent = counter
-                        renderFromState(data.state);
-                       
+
+                        let isNewGame;
+                        if ('new_game' in data && data.new_game) {
+                            isNewGame = data.new_game;
+                        } else {
+                            isNewGame = false;
+                        }
+                        console.log("here1")
+                        updateFromState(data.state, isNewGame);
+
                     }
                 }
             });
@@ -316,18 +322,30 @@ footer{
 </body>
 </html-->
 <script>
+    
     // setting the towers and disk vars
 
-const tower1 = document.querySelector('#first')
-const tower2 = document.querySelector('#second')
-const tower3 = document.querySelector('#third')
-let diskSelector = 0
-let minMoves = 0
-let counter = 0
+    const tower1 = document.querySelector('#first')
+    const tower2 = document.querySelector('#second')
+    const tower3 = document.querySelector('#third')
+    let diskSelector = 0
+    let minMoves = 0
+    let counter = 0
 
-//Click event to show highlighted item variable needed to hold a true false value
-let active = false
+    //Click event to show highlighted item variable needed to hold a true false value
+    let active = false
 
+    window.onload = function () {
+        fetch('/current_state')
+            .then(response => response.json())
+            .then(data => {
+                if ('state' in data) {
+                    $('.disk').remove();
+                    console.log("here")
+                    updateFromState(data.state, false);
+                }
+            });
+    };
 //Creating using DOM elements
 function build(){
     const diskDrop = document.getElementById('drop')
@@ -337,24 +355,37 @@ function build(){
         let diskDiv = document.createElement('div')
         diskDiv.id = 'disk' + i
         diskDiv.className = 'disk'
-        tower1.appendChild(diskDiv)}
+        tower1.appendChild(diskDiv)
+    }
     minMoves = 2 ** diskSelector - 1
     document.getElementById('minimum').textContent = minMoves
 }build()
 
 
-function renderFromState(state) {
-    console.log(state[0].length)
-    const diskDrop = document.getElementById('drop')
-    drop.value = state[0].length
+function updateFromState(state, isNewGame = false) {
+    $('.disk').remove();
+    const towers = [tower1, tower2, tower3];
+    //const diskDrop = document.getElementById('drop')
+    //drop.value = state[0].length
 
     for (let i = 0; i < 3; i++) {
-        for (let j = 1; j <= state[i].length ; j++) {
+        let tower = towers[i];
+        for (let j = 0; j < state[i].length; j++) {
+            let diskValue = state[i][j];
             let diskDiv = document.createElement("div");
-            diskDiv.id = 'disk' + j
+            diskDiv.id = 'disk' + diskValue
             diskDiv.className = 'disk'
-            tower1.appendChild(diskDiv);
+            tower.appendChild(diskDiv);
         }
+    }
+
+    if (isNewGame) {
+        active = false;
+        counter = 0;
+        document.getElementById('counter').textContent = counter;
+
+        const totalDisks = state[0].length + state[1].length + state[2].length;
+        document.getElementById('drop').value = totalDisks;
     }
 
     // Update minimum moves
@@ -362,6 +393,7 @@ function renderFromState(state) {
     minMoves = 2 ** totalDisks - 1;
     document.getElementById('minimum').textContent = minMoves;
 }
+
 
 //let actions = function(){
     let actions = function(ths){    
@@ -401,10 +433,8 @@ function intercept_actions(tower) {
     }
     function intercept_actions3() {
         intercept_actions(3)
-        console.log("tower3")
         //actions(tower3)
     }
-
 
 
 //The listeners are on the parents
@@ -441,6 +471,7 @@ function newGame(){
 
     tower3.addEventListener('click', intercept_actions3)
 }
+
 </script>
 
 <a href='/shutdown'>Shutdown</a>
