@@ -6,7 +6,7 @@ from kazoo.exceptions import KazooException
 import threading
 import time, json
 
-class ZookeeperManager:
+class Zookeeper:
     def __init__(self): 
         self.id=threading.get_ident()
         self.zk = KazooClient(hosts='127.0.0.1:2181') 

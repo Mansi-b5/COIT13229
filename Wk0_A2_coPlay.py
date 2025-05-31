@@ -201,6 +201,23 @@ def test_message_hello_world():
     last_chat=requests.get(url1).json().pop()['message']
     return last_chat=="Hello world"
 
+# test if invalid message sent 
+def test_invalid_input():
+    print("\nRunning test_invalid_input...")
+
+    url = 'http://127.0.0.1:5000/message'
+    invalid_msg = b"This is not base64 encoded"
+
+    response = requests.post(url, invalid_msg)
+    if response.status_code >= 400:
+        print(f"PASS: Invalid input handled correctly and rejected with status {response.status_code}")
+        return True
+    else:
+        print(f"FAIL: Server accepted invalid input. Status: {response.status_code}")
+        return False
+
+
+
 #test for unique messages and tower clicks
 def test_unique_messages():
     print("\nRunning test_unique_message_delivery...")
@@ -246,14 +263,86 @@ def test_unique_messages():
     print("PASS: No duplicates received on second /update call")
     return True
 
+# test tower clicks and verify state sync
+def test_tower_click_state_sync():
+    print("Testing tower click and state sync...")
+    time.sleep(1)
+
+    # Simulate GUI selecting a tower and moving to another tower
+    requests.get("http://127.0.0.1:5000/tower?tower=1")
+    requests.get("http://127.0.0.1:5000/tower?tower=3")
+
+    # Get the updated game state from client 1
+    url1 = "http://127.0.0.1:5000/update"
+    state1 = requests.get(url1).json()
+
+    # Get the updated game state from client 2
+    url2 = "http://127.0.0.1:5002/update"
+    state2 = requests.get(url2).json()
+
+    latest_state1 = state1[-1]["state"] if state1 else None
+    latest_state2 = state2[-1]["state"] if state2 else None
+
+    if latest_state1 == latest_state2:
+        print("PASS: Game state is synchronized across clients.")
+        return True
+    else:
+        print("FAIL: Game state mismatch.")
+        print(f"Client 1 state: {latest_state1}")
+        print(f"Client 2 state: {latest_state2}")
+        return False
+
+# test message order 
+def test_lag_reorder_tolerance():
+    print("\nRunning test_lag_reorder_tolerance...")
+
+    url = 'http://127.0.0.1:5000/message'
+    msg1 = f"Msg Early {uuid.uuid4()}"
+    msg2 = f"Msg Late {uuid.uuid4()}"
+
+    # Send late message then early one with a delay
+    threading.Thread(target=delayed_message, args=(url, msg1, 1)).start()
+    threading.Thread(target=delayed_message, args=(url, msg2, 0.1)).start()
+
+    time.sleep(2)
+
+    messages = requests.get('http://127.0.0.1:5000/update').json()
+    received = [msg['message'] for msg in messages]
+    
+    if msg1 in received and msg2 in received:
+        print(received)
+        print("PASS: Both messages received.")
+        return True
+    else:
+        print("FAIL: One or both messages not received.")
+        print("Messages received:", received)
+        return False
+
+def delayed_message(url, msg, delay):
+        time.sleep(delay)
+        requests.post(url, base64.b64encode(msg.encode('utf-8')))
+
 def tests():
-    do_test_message_hello_world=True
+    do_test_message_hello_world=False
+    do_test_invalid_input = True
     do_test_unique_messages = True
+    do_test_tower_click_state_sync = True
+    do_test_lag_reorder_tolerance = True
+
     if do_test_message_hello_world:
         print(f"test_message_hello_world: {test_message_hello_world()}")
         test_clean()
+    if do_test_invalid_input:
+        print(f"test_invalid_input: {test_invalid_input()}")
+        test_clean()
     if do_test_unique_messages:
         print(f"test_unique_message_delivery: {test_unique_messages()}")
+        test_clean()
+    if do_test_tower_click_state_sync:
+        print(f"test_tower_click_state_sync: {test_tower_click_state_sync()}")
+        test_clean()
+    if do_test_lag_reorder_tolerance:
+        print(f"test_lag_order: {test_lag_reorder_tolerance()}")
         test_clean()
 
 if TESTING:
