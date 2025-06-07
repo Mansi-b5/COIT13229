@@ -23,9 +23,11 @@ class Webapp:
         app.add_url_rule("/shutdown","get_shutdown",self.shutdown,methods=['GET'])
         app.add_url_rule("/start_game","get_start_game",self.start_game,methods=['GET'])
         app.add_url_rule("/current_state","get_current_state",self.get_current_state,methods=['GET'])
+        app.add_url_rule("/chat_history","get_chat_history",self.get_chat_history,methods=['GET'])
 
         self.duplicates= set() #set will only keep unique messages (filter)
         self.game_state = [[1,2,3], [], []]
+        self.chat_history = []
         self.selected_tower = None
         self.counter = 0 
 
@@ -104,9 +106,13 @@ class Webapp:
         "state": self.game_state})
         return "ok"
 
-    #@app.route('/current_state')
+    #@app.route('/current_state',methods=["GET"])
     def get_current_state(self):
         return jsonify({"state":self.game_state})
+    
+    #@app.route("/chat/history", methods=["GET"])
+    def get_chat_history(self):
+        return jsonify(self.chat_history)
     
     #@app.route('/update') #,methods=["GET"])
     # Called periodically by the polling browser.
@@ -119,7 +125,7 @@ class Webapp:
                 msId = ms.get('id')
                 
                 current_time = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
-                
+
                 if msId in self.duplicates:
                     continue  # Skip if already read
                 self.duplicates.add(msId)
@@ -135,6 +141,13 @@ class Webapp:
                 
                 if "state" in ms:
                     self.game_state = ms["state"]
+
+                # Save to chat history
+                if "message" in ms:
+                    self.chat_history.append(ms)
+                    if len(self.chat_history) > 5:
+                        self.chat_history.pop(0)  # keep only the last 5 messages
+                    print(self.chat_history)
                 
                 messages=messages+[ms]
             except zmq.Again: 
@@ -215,8 +228,6 @@ def test_invalid_input():
     else:
         print(f"FAIL: Server accepted invalid input. Status: {response.status_code}")
         return False
-
-
 
 #test for unique messages and tower clicks
 def test_unique_messages():
