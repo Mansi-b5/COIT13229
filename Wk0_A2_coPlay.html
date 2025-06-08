@@ -361,7 +361,7 @@ footer{
         fetch('/chat_history')
             .then(response => response.json())
             .then(messages => {
-                console.log(messages)
+
                 for(const data of messages){
                     const chatBox = document.getElementById('chat-messages');
                     
