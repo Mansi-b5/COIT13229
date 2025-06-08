@@ -217,3 +217,27 @@ java.net.SocketException: Connection reset
 2025-06-08 18:09:22,534 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50032, timeout of 10000ms exceeded
 2025-06-08 18:09:22,534 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50034, timeout of 10000ms exceeded
 2025-06-08 18:09:24,533 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50033, timeout of 10000ms exceeded
+2025-06-08 20:18:03,381 [myid:] - INFO  [NIOWorkerThread-7:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:50949, session = 0x10003abdca50036
+2025-06-08 20:18:03,381 [myid:] - INFO  [NIOWorkerThread-3:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:50950, session = 0x10003abdca50037
+2025-06-08 20:18:12,506 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50036, timeout of 10000ms exceeded
+2025-06-08 20:18:14,509 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50037, timeout of 10000ms exceeded
+2025-06-08 23:35:19,384 [myid:] - INFO  [NIOWorkerThread-1:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:57250, session = 0x10003abdca50038
+2025-06-08 23:35:19,384 [myid:] - INFO  [NIOWorkerThread-8:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:57251, session = 0x10003abdca50039
+2025-06-08 23:35:27,830 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50039, timeout of 10000ms exceeded
+2025-06-08 23:35:29,830 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50038, timeout of 10000ms exceeded
+2025-06-09 00:04:54,873 [myid:] - INFO  [NIOWorkerThread-7:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:58599, session = 0x10003abdca5003b
+2025-06-09 00:04:54,875 [myid:] - INFO  [NIOWorkerThread-5:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:58598, session = 0x10003abdca5003a
+2025-06-09 00:05:01,901 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca5003b, timeout of 10000ms exceeded
+2025-06-09 00:05:03,904 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca5003a, timeout of 10000ms exceeded
+2025-06-09 00:08:39,875 [myid:] - INFO  [NIOWorkerThread-7:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:63818, session = 0x10003abdca5003d
+2025-06-09 00:08:39,876 [myid:] - INFO  [NIOWorkerThread-5:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:63819, session = 0x10003abdca5003c
+2025-06-09 00:08:47,900 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca5003c, timeout of 10000ms exceeded
+2025-06-09 00:08:49,906 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca5003d, timeout of 10000ms exceeded
+2025-06-09 00:23:17,619 [myid:] - INFO  [NIOWorkerThread-6:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:49251, session = 0x10003abdca5003f
+2025-06-09 00:23:17,623 [myid:] - INFO  [NIOWorkerThread-8:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:49252, session = 0x10003abdca5003e
+2025-06-09 00:23:25,931 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca5003f, timeout of 10000ms exceeded
+2025-06-09 00:23:27,975 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca5003e, timeout of 10000ms exceeded
+2025-06-09 00:26:09,804 [myid:] - INFO  [NIOWorkerThread-2:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:54151, session = 0x10003abdca50041
+2025-06-09 00:26:09,808 [myid:] - INFO  [NIOWorkerThread-8:NIOServerCnxn@337] - Unable to read additional data from client, it probably closed the socket: address = /127.0.0.1:54150, session = 0x10003abdca50040
+2025-06-09 00:26:20,013 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50040, timeout of 10000ms exceeded
+2025-06-09 00:26:20,019 [myid:] - INFO  [SessionTracker:ZooKeeperServer@639] - Expiring session 0x10003abdca50041, timeout of 10000ms exceeded

@@ -138,7 +138,7 @@ class Webapp:
             data, _ = self.zk.get("/chat_history")
             return jsonify({"chat": json.loads(data.decode("utf-8"))})
 
-        return jsonify({self.chat_history})
+        return jsonify({"chat": self.chat_history})
     
     #@app.route('/update') #,methods=["GET"])
     # Called periodically by the polling browser.
